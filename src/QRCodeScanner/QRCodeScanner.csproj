@@ -1,0 +1,59 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>QRCodeScanner</RootNamespace>
+    <AssemblyName>QRCodeScanner</AssemblyName>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <CodePage>65001</CodePage>
+    <Deterministic>true</Deterministic>
+
+    <Version>1.0.0</Version>
+    <Product>QR Code Scanner</Product>
+    <Company>Mushurelie</Company>
+    <Description>Scanne l'ecran et decode les QR codes d'une simple touche.</Description>
+    <Copyright>Copyright (c) 2026 Mushurelie</Copyright>
+  </PropertyGroup>
+
+  <!-- Release = un seul .exe : ni PDB, ni DLL, ni .exe.config a cote. -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <GenerateSupportedRuntime>false</GenerateSupportedRuntime>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+    <PackageReference Include="ZXing.Net" Version="0.16.9" />
+  </ItemGroup>
+
+  <!--
+    Embarque les DLL des dependances (ZXing) dans l'exe en tant que ressources.
+    Program.ResolveEmbedded les recharge depuis la memoire au premier besoin,
+    ce qui donne un executable unique et portable.
+  -->
+  <Target Name="EmbedManagedDependencies"
+          BeforeTargets="AssignTargetPaths"
+          DependsOnTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <EmbeddedResource Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)' == '.dll'">
+        <LogicalName>%(Filename)%(Extension)</LogicalName>
+      </EmbeddedResource>
+    </ItemGroup>
+  </Target>
+
+  <!-- Embarquees dans l'exe : inutile de les recopier a cote. -->
+  <Target Name="SkipCopyLocalForEmbedded" BeforeTargets="_CopyFilesMarkedCopyLocal">
+    <ItemGroup>
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)' == '.dll'" />
+    </ItemGroup>
+  </Target>
+
+</Project>
